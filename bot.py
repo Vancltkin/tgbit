@@ -77,7 +77,7 @@ def start(update: Update, context: CallbackContext):
         db.set_admin(user_id)
         update.message.reply_text("👑 Вы стали администратором бота!")
         show_admin_menu(update)
-    elif user_id == admin[0]:
+    elif user_id == admin[0]:  # Исправлено: admin[0] вместо admin
         show_admin_menu(update)
     else:
         user = db.get_user(user_id)
@@ -85,7 +85,7 @@ def start(update: Update, context: CallbackContext):
             send_user_info(update, user)
         else:
             update.message.reply_text("🚫 Доступ запрещен")
-
+            
 def show_admin_menu(update):
     keyboard = [['Добавить пользователя', 'Список пользователей']]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
