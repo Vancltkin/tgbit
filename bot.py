@@ -258,6 +258,12 @@ def main():
     updater.idle()
 
 if __name__ == '__main__':
-    if not os.path.exists('bot.db'):
-        Database()  # Инициализация БД
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--init-db', action='store_true')
+    args = parser.parse_args()
+    
+    if args.init_db:
+        Database()
+        print("База данных инициализирована!")
+    else:
+        main()
