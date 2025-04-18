@@ -26,7 +26,7 @@ python3 -m venv venv
 
 # Установка зависимостей
 echo "📦 Установка библиотек..."
-./venv/bin/pip install python-telegram-bot python-dotenv
+./venv/bin/pip install python-telegram-bot==13.7 python-dotenv
 
 # Инициализация БД
 echo "💾 Инициализация базы данных..."
