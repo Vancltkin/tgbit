@@ -3,6 +3,7 @@ import os
 import sys
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler
+from dotenv import load_dotenv
 
 # Состояния для ConversationHandler
 ADD_USER, GET_UID, GET_LINK, GET_TEXT, GET_APP_LINK = range(5)
@@ -212,52 +213,77 @@ def send_user_info(update, user):
     update.message.reply_text(text, reply_markup=reply_markup)
 
 def main():
-    # Проверка токена
-    if not os.path.exists('.env'):
-        print("ОШИБКА: Сначала выполните скрипт установки!")
+    # Загрузка переменных окружения из .env
+    load_dotenv()
+    
+    # Получение токена
+    token = os.getenv('BOT_TOKEN')
+    
+    # Проверка наличия токена
+    if not token:
+        print("❌ Ошибка: Токен бота не найден в .env файле!")
+        print("Проверьте что в файле .env есть строка:")
+        print("BOT_TOKEN='ваш_токен'")
         return
-    
-    with open('.env', 'r') as f:
-        token = f.read().strip().split('=')[1]
-    
-    updater = Updater(token)
-    dp = updater.dispatcher
 
-    # Обработчики команд
-    dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_user_message))
+    try:
+        # Инициализация бота
+        updater = Updater(token)
+        dp = updater.dispatcher
 
-    # Обработчики для админа
-    conv_add_user = ConversationHandler(
-        entry_points=[MessageHandler(Filters.regex('^Добавить пользователя$'), add_user_start)],
-        states={
-            GET_UID: [MessageHandler(Filters.text, add_user_get_uid)],
-            GET_LINK: [MessageHandler(Filters.text, add_user_get_link)],
-            GET_TEXT: [MessageHandler(Filters.text, add_user_get_text)],
-            GET_APP_LINK: [MessageHandler(Filters.text, add_user_finish)]
-        },
-        fallbacks=[]
-    )
+        # ========== Обработчики команд ==========
+        # Стартовая команда
+        dp.add_handler(CommandHandler('start', start))
+        
+        # Обработчик текстовых сообщений
+        dp.add_handler(MessageHandler(
+            Filters.text & ~Filters.command, 
+            handle_user_message
+        ))
 
-    conv_edit_user = ConversationHandler(
-        entry_points=[CallbackQueryHandler(edit_user_start, pattern='^edit_')],
-        states={
-            EDIT_FIELD: [CallbackQueryHandler(edit_field, pattern='^edit_')],
-            EDIT_VALUE: [MessageHandler(Filters.text, edit_value)]
-        },
-        fallbacks=[]
-    )
+        # ========== Админ-функционал ==========
+        # Добавление пользователя (ConversationHandler)
+        conv_add_user = ConversationHandler(
+            entry_points=[MessageHandler(Filters.regex('^Добавить пользователя$'), add_user_start)],
+            states={
+                GET_UID: [MessageHandler(Filters.text, add_user_get_uid)],
+                GET_LINK: [MessageHandler(Filters.text, add_user_get_link)],
+                GET_TEXT: [MessageHandler(Filters.text, add_user_get_text)],
+                GET_APP_LINK: [MessageHandler(Filters.text, add_user_finish)]
+            },
+            fallbacks=[]
+        )
 
-    dp.add_handler(conv_add_user)
-    dp.add_handler(conv_edit_user)
-    dp.add_handler(MessageHandler(Filters.regex('^Список пользователей$'), list_users))
-    dp.add_handler(CallbackQueryHandler(user_detail, pattern='^user_'))
-    dp.add_handler(CallbackQueryHandler(delete_user, pattern='^delete_'))
-    dp.add_handler(CallbackQueryHandler(list_users, pattern='^back$'))
+        # Редактирование пользователя (ConversationHandler)
+        conv_edit_user = ConversationHandler(
+            entry_points=[CallbackQueryHandler(edit_user_start, pattern='^edit_')],
+            states={
+                EDIT_FIELD: [CallbackQueryHandler(edit_field, pattern='^edit_')],
+                EDIT_VALUE: [MessageHandler(Filters.text, edit_value)]
+            },
+            fallbacks=[]
+        )
 
-    updater.start_polling()
-    updater.idle()
+        # Добавление обработчиков
+        dp.add_handler(conv_add_user)
+        dp.add_handler(conv_edit_user)
+        dp.add_handler(MessageHandler(Filters.regex('^Список пользователей$'), list_users))
+        dp.add_handler(CallbackQueryHandler(user_detail, pattern='^user_'))
+        dp.add_handler(CallbackQueryHandler(delete_user, pattern='^delete_'))
+        dp.add_handler(CallbackQueryHandler(list_users, pattern='^back$'))
 
+        # Запуск бота
+        print("✅ Бот успешно запущен!")
+        updater.start_polling()
+        updater.idle()
+
+    except Exception as e:
+        print(f"❌ Критическая ошибка: {str(e)}")
+        print("Проверьте:")
+        print("1. Корректность токена")
+        print("2. Подключение к интернету")
+        print("3. Наличие прав доступа")
+        
 if __name__ == '__main__':
     # Простая проверка аргументов
     if '--init-db' in sys.argv:
