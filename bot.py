@@ -1,6 +1,6 @@
 import sqlite3
 import os
-import argparse
+import sys
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler
 
@@ -259,12 +259,9 @@ def main():
     updater.idle()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--init-db', action='store_true')
-    args = parser.parse_args()
-    
-    if args.init_db:
+    # Простая проверка аргументов
+    if '--init-db' in sys.argv:
         Database()
-        print("База данных инициализирована!")
+        print("✅ База данных инициализирована!")
     else:
         main()
