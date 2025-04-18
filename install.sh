@@ -1,7 +1,7 @@
 #!/bin/bash
-echo "🐍 Установка Python-зависимостей..."
+echo "🐍 Настройка окружения..."
 sudo apt-get update
-sudo apt-get install -y python3 python3-pip
+sudo apt-get install -y python3 python3-venv python3-pip
 
 echo "📥 Загрузка файлов бота..."
 wget -O bot.py https://raw.githubusercontent.com/Vancltkin/tgbit/main/bot.py
@@ -11,11 +11,15 @@ echo "🔑 Настройка токена..."
 read -p "Введите токен бота: " token
 echo "BOT_TOKEN='$token'" > .env
 
+echo "🔧 Создание виртуального окружения..."
+python3 -m venv venv
+source venv/bin/activate
+
 echo "📦 Установка библиотек..."
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 
 echo "💾 Инициализация базы данных..."
-python3 bot.py --init-db
+python bot.py --init-db
 
 echo "✅ Установка завершена! Запустите бота командой:"
-echo "python3 bot.py"
+echo "source venv/bin/activate && python bot.py"
