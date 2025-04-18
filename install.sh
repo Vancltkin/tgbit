@@ -1,23 +1,21 @@
 #!/bin/bash
-echo "Установка бота:"
+echo "🐍 Установка Python-зависимостей..."
+sudo apt-get update
+sudo apt-get install -y python3 python3-pip
 
-# Установка зависимостей
-if ! command -v pip3 &>/dev/null; then
-    sudo apt-get update
-    sudo apt-get install -y python3-pip
-fi
-
-# Загрузка файлов
+echo "📥 Загрузка файлов бота..."
 wget -O bot.py https://raw.githubusercontent.com/Vancltkin/tgbit/main/bot.py
 wget -O requirements.txt https://raw.githubusercontent.com/Vancltkin/tgbit/main/requirements.txt
 
+echo "🔑 Настройка токена..."
 read -p "Введите токен бота: " token
-echo "BOT_TOKEN=$token" > .env
+echo "BOT_TOKEN='$token'" > .env
 
-# Установка пакетов
+echo "📦 Установка библиотек..."
 pip3 install -r requirements.txt
 
-# Инициализация БД
+echo "💾 Инициализация базы данных..."
 python3 bot.py --init-db
 
-echo "Установка завершена! Запустите бота командой: python3 bot.py"
+echo "✅ Установка завершена! Запустите бота командой:"
+echo "python3 bot.py"
